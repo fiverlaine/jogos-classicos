@@ -55,9 +55,11 @@ CREATE TABLE IF NOT EXISTS game_sessions (
 
 -- Tabela para armazenar as sessões de jogo da memória
 CREATE TABLE IF NOT EXISTS memory_game_sessions (
+  last_reset TIMESTAMP WITH TIME ZONE,
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   last_move_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_reset TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   current_player_id TEXT NOT NULL,
   player_1_id TEXT NOT NULL,
   player_1_nickname TEXT NOT NULL,
@@ -111,6 +113,16 @@ FOR EACH ROW
 WHEN (OLD.matches IS DISTINCT FROM NEW.matches)
 EXECUTE FUNCTION update_last_move_timestamp();
 
+-- Índice para otimizar consultas por último reset
+CREATE INDEX IF NOT EXISTS memory_game_sessions_last_reset_idx ON memory_game_sessions (last_reset);
+CREATE INDEX IF NOT EXISTS memory_game_sessions_current_turn_idx ON memory_game_sessions (current_player_id);
+
+-- Trigger para atualizar last_reset quando houver alteração nas cartas
+CREATE TRIGGER update_memory_reset_timestamp
+BEFORE UPDATE OF cards ON memory_game_sessions
+FOR EACH ROW
+EXECUTE FUNCTION update_last_move_timestamp();
+
 -- Função para limpar jogos antigos (pode ser executada periodicamente)
 CREATE OR REPLACE FUNCTION cleanup_old_games()
 RETURNS void AS $$
@@ -135,4 +147,4 @@ BEGIN
   WHERE (status = 'finished') 
   AND last_move_at < NOW() - INTERVAL '72 hours';
 END;
-$$ LANGUAGE plpgsql; 
+$$ LANGUAGE plpgsql;

@@ -1,0 +1,16 @@
+@import '../src/styles/card.css';
+
+/* Estilos adicionais para garantir que os ícones sejam sempre visíveis */
+.card-icon {
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Garantir que os ícones dentro das cartas viradas sejam visíveis */
+.memory-card.flipped .card-icon,
+[style*="rotateY(180deg)"] .card-icon {
+  opacity: 1 !important;
+  display: flex !important;
+}

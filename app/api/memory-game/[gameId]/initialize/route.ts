@@ -5,7 +5,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { gameId: string } }
 ) {
-  const { gameId } = params;
+  // Ensure params is awaited before using its properties
+  const { gameId } = await params;
   
   try {
     // Obter os dados da requisição
@@ -42,4 +43,4 @@ export async function POST(
       { status: 500 }
     );
   }
-} 
+}
